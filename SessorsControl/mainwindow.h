@@ -43,6 +43,10 @@ private:
 public:
     void OpenCo2Com();//打开co2传感器串口
     void CloseCo2Com();//关闭co2传感器串口
+    bool SendSPICommandByte(uint8_t SPICommandByte);
+    ushort Get_MODBUS_CRC(uint8_t *ByteArray, uint8_t NumOfBytes);
+    bool WritePacketBufferBytes(uint8_t NumOfBytes);
+    void OperateSpi(bool bStart);//bStart:true,startup;false,stop
 };
 
 #endif // MAINWINDOW_H

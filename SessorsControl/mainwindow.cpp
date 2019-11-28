@@ -1,6 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+uint8_t PacketBufferGlobal[96] = {0};//接受数据数组
+uint8_t SerBuf[64] = {0};//发送数据数组
+////////////////////////////////////////////////////////////////////////////////
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -101,4 +104,125 @@ void MainWindow::updateSpi()
     qDebug()<<QString::number(cnt++)<<str2<<"\n";
 }
 
+bool MainWindow::SendSPICommandByte(uint8_t SPICommandByte)
+{
+    bool result = false;
 
+    uint8_t b = 0;
+   do
+   {
+       SerBuf[0] = SPICommandByte;
+       spi.SPIDataRW(0,SerBuf,PacketBufferGlobal,1);
+       if ((int)SerBuf[0] != 0xF3)
+       {
+          usleep(10);
+           b += 1;
+       }
+   }
+   while ((int)SerBuf[0] != 0xF3 && (int)b <= 9);
+
+   if ((int)PacketBufferGlobal[1] == 0xF3)
+   {
+       result = true;
+   }
+
+    return result;
+}
+
+ushort MainWindow::Get_MODBUS_CRC(uint8_t *ByteArray, uint8_t NumOfBytes)
+{
+   ushort num = 65535;
+   uint8_t b = 0;
+   uint8_t b2 = (uint8_t)((int)NumOfBytes - 1);
+   if (b <= b2)
+   {
+       b2 += 1;
+       do
+       {
+           num = (ushort)((uint)num ^ (uint)((ushort)ByteArray[(int)b]));
+           uint8_t b3 = 0;
+           uint8_t b4 = 7;
+           if (b3 <= b4)
+           {
+               b4 += 1;
+               do
+               {
+                   if (((int)num & 1) == 1)
+                   {
+                       num = (ushort)((uint)((int)num) >> 1);
+                       num = (ushort)((int)num ^ 40961);
+                   }
+                   else
+                   {
+                       num = (ushort)((uint)((int)num) >> 1);
+                   }
+                   b3 += 1;
+               }
+               while (b3 != b4);
+           }
+           b += 1;
+       }
+       while (b != b2);
+   }
+   return num;
+}
+
+bool MainWindow::WritePacketBufferBytes(uint8_t NumOfBytes)
+{
+   SerBuf[0] = 0x01;
+   uint8_t b = 1;
+   uint16_t cnt = 0;
+   if (b <= NumOfBytes)
+   {
+       uint8_t b2 = NumOfBytes+1;
+
+       do
+       {
+           uint8_t data = 0;
+           spi.SPIDataRW(0,SerBuf,&data,1);//
+           PacketBufferGlobal[cnt++] = data;
+           b += 1;
+           usleep(20);//delay 20 us
+       }
+       while (b != b2);
+   }
+   return true;
+}
+
+void MainWindow::OperateSpi(bool bStart)//bStart:true,startup;false,stop
+{
+   uint8_t data = 0;
+   if(bStart)
+   {
+       //turn fan on
+       SerBuf[0] = 0x03;
+       spi.SPIDataRW(0,SerBuf,&data,1);//
+       usleep(20);
+       SerBuf[0] = 0x03;
+       spi.SPIDataRW(0,SerBuf,&data,1);//
+
+       usleep(20);
+       //turn laser on
+       SerBuf[0] = 0x03;
+       spi.SPIDataRW(0,SerBuf,&data,1);//
+       usleep(20);
+       SerBuf[0] = 0x07;
+       spi.SPIDataRW(0,SerBuf,&data,1);//
+   }
+   else {
+       //turn fan off
+       SerBuf[0] = 0x03;
+       spi.SPIDataRW(0,SerBuf,&data,1);//
+       usleep(20);
+       SerBuf[0] = 0x02;
+       spi.SPIDataRW(0,SerBuf,&data,1);//
+
+       usleep(20);
+       //turn laser off
+       SerBuf[0] = 0x03;
+       spi.SPIDataRW(0,SerBuf,&data,1);//
+       usleep(20);
+       SerBuf[0] = 0x06;
+       spi.SPIDataRW(0,SerBuf,&data,1);//
+   }
+}
