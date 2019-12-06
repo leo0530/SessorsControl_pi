@@ -12,14 +12,14 @@ MainWindow::MainWindow(QWidget *parent) :
     OpenCo2Com();//打开co2传感器串口
 
     rosTimer = new  QTimer(this);
-    rosTimer->start(100);
+    rosTimer->start(10);
     connect( rosTimer, SIGNAL(timeout()),this, SLOT(RunRosSpin()) );
 
     fd = spi.Open(0,5000000,1);//打开spi设备
 
     timerSpi = new QTimer(this);
     connect(timerSpi, SIGNAL(timeout()), this, SLOT(updateSpi()));
-    timerSpi->start(1000);
+ //   timerSpi->start(1000);
 
     //初始化创建QUdpSocket对象
      mSocket = new QUdpSocket();
