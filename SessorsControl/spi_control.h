@@ -15,7 +15,7 @@
 static const char   *spiDev0  = "/dev/spidev0.0" ;
 static const char   *spiDev1  = "/dev/spidev0.1" ;
 static  u_int8_t     spiBPW   = 8 ;
-static  u_int16_t     spiDelay = 0 ;
+static  u_int16_t    spiDelay = 0 ;
 static u_int32_t     spiSpeeds [2] ;
 static int          spiFds [2] ;
 

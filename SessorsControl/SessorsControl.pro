@@ -9,6 +9,7 @@ QT       += core gui network serialport
 INCLUDEPATH += /opt/ros/kinetic/include
 DEPENDPATH += /opt/ros/kinetic/include
 LIBS += -L/opt/ros/kinetic/lib -lroscpp -lroslib -lrosconsole -lroscpp_serialization -lrostime
+LIBS += -L/usr/lib -lLinuxSDUSB
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -31,11 +32,13 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    spi_control.cpp
+    spi_control.cpp \
+    optimumcontrol.cpp
 
 HEADERS += \
         mainwindow.h \
-    spi_control.h
+    spi_control.h \
+    optimumcontrol.h
 
 FORMS += \
         mainwindow.ui

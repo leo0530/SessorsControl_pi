@@ -9,13 +9,19 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    OpenCo2Com();//打开co2传感器串口
 
-    rosTimer = new  QTimer(this);
-    rosTimer->start(100);
-    connect( rosTimer, SIGNAL(timeout()),this, SLOT(RunRosSpin()) );
+    bOptimumIsOpen = OpenOptimum();
+//    if(！bOptimumIsOpen)
+//    {
+//        qDebug()<<"光照传感器打开失败";
+//    }
+//    OpenCo2Com();//打开co2传感器串口
 
-    fd = spi.Open(0,5000000,1);//打开spi设备
+//    rosTimer = new  QTimer(this);
+//    rosTimer->start(100);
+//    connect( rosTimer, SIGNAL(timeout()),this, SLOT(RunRosSpin()) );
+
+//    fd = spi.Open(0,5000000,1);//打开spi设备
 
     timerSpi = new QTimer(this);
     connect(timerSpi, SIGNAL(timeout()), this, SLOT(updateSpi()));
@@ -27,6 +33,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    if(bOptimumIsOpen)
+        usb.Close();
     CloseCo2Com();//关闭co2传感器串口
     if(rosTimer->isActive())
     {
@@ -91,17 +99,32 @@ void MainWindow::RunRosSpin()
 
 void MainWindow::updateSpi()
 {
-    unsigned char tx_Data[10]={1,2,3,4,5,6,7,8,9,10}; //定义读写的数据
-    unsigned char rx_Data[10]={0,0,0,0,0,0,0,0,0,0};
 
-    int len = spi.SPIDataRW(0,tx_Data,rx_Data,7); //向总线中写入7个数据
+    if(!bOptimumIsOpen)
+        return;
+    int ret = usb.Measure(20);
+    if (ret != 0)
+    {
+        qDebug()<<"optimum sessor Measure failure!";
+        return;
+    }
 
-    char *str1 = (char *)rx_Data;
+    double lx,glx;
+    usb.GetLxAndGLx(lx,glx);
 
-    QString str2 = QString(QLatin1String(str1));
+    qDebug()<<QString::number(lx,'f',2)/*<<QString::number(glx,'f',2)*/;
 
-    static int cnt = 0;
-    qDebug()<<QString::number(cnt++)<<str2<<"\n";
+//    unsigned char tx_Data[10]={1,2,3,4,5,6,7,8,9,10}; //定义读写的数据
+//    unsigned char rx_Data[10]={0,0,0,0,0,0,0,0,0,0};
+
+//    int len = spi.SPIDataRW(0,tx_Data,rx_Data,7); //向总线中写入7个数据
+
+//    char *str1 = (char *)rx_Data;
+
+//    QString str2 = QString(QLatin1String(str1));
+
+//    static int cnt = 0;
+//    qDebug()<<QString::number(cnt++)<<str2<<"\n";
 }
 
 bool MainWindow::SendSPICommandByte(uint8_t SPICommandByte)
@@ -225,4 +248,43 @@ void MainWindow::OperateSpi(bool bStart)//bStart:true,startup;false,stop
        SerBuf[0] = 0x06;
        spi.SPIDataRW(0,SerBuf,&data,1);//
    }
+}
+
+bool MainWindow::OpenOptimum()
+{
+    double WArray[2048];
+    int dataLenght;
+    int ret = -1;
+    ret = usb.Init(WArray, &dataLenght);
+    if (ret != 0)
+    {
+        qDebug()<<"optimum sessor init failure!";
+        return false;
+    }
+
+    return true;
+}
+
+
+void MainWindow::on_pushButton_clicked()
+{
+    QFile file;
+    QDateTime time =QDateTime::currentDateTime();
+    QString strDate = time.toString("yyyy-MM-dd hh-mm-ss.csv");
+
+    file.setFileName(strDate);
+
+    if(!file.open(QIODevice::WriteOnly|QIODevice::Text|QIODevice::Append))
+    {
+        qDebug()<<"open file failed!";
+        return;
+    }
+
+    QTextStream textStream;
+    textStream.setDevice(&file);
+
+    textStream<<strDate;
+
+    file.close();
+
 }
