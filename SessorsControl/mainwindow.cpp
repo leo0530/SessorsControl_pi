@@ -11,15 +11,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     bOptimumIsOpen = OpenOptimum();
-//    if(！bOptimumIsOpen)
-//    {
-//        qDebug()<<"光照传感器打开失败";
-//    }
+    if(bOptimumIsOpen == false)
+    {
+        qDebug()<<"光照传感器打开失败";
+    }
 //    OpenCo2Com();//打开co2传感器串口
 
-//    rosTimer = new  QTimer(this);
-//    rosTimer->start(100);
-//    connect( rosTimer, SIGNAL(timeout()),this, SLOT(RunRosSpin()) );
+ //   InitRos();//初始化节点
+
+    rosTimer = new  QTimer(this);
+    rosTimer->start(100);
+    connect( rosTimer, SIGNAL(timeout()),this, SLOT(RunRosSpin()) );
 
 //    fd = spi.Open(0,5000000,1);//打开spi设备
 
@@ -35,7 +37,8 @@ MainWindow::~MainWindow()
 {
     if(bOptimumIsOpen)
         usb.Close();
-    CloseCo2Com();//关闭co2传感器串口
+ //   CloseCo2Com();//关闭co2传感器串口
+
     if(rosTimer->isActive())
     {
         rosTimer->stop();
@@ -50,6 +53,7 @@ MainWindow::~MainWindow()
     }
     delete ui;
 }
+
 
 void MainWindow::OpenCo2Com()
 {
@@ -92,8 +96,8 @@ void MainWindow::readCo2Com()
 void MainWindow::RunRosSpin()
 {
      ros::spinOnce();
-     QByteArray msg = "Hello world!";
-     qint64 len = mSocket->writeDatagram(msg, QHostAddress("192.168.1.168"), 2333);
+//     QByteArray msg = "Hello world!";
+//     qint64 len = mSocket->writeDatagram(msg, QHostAddress("192.168.1.168"), 2333);
 
 }
 

@@ -56,6 +56,7 @@ public:
     void OperateSpi(bool bStart);//bStart:true,startup;false,stop
 
     bool OpenOptimum();//打开光照传感器
+
 };
 
 #endif // MAINWINDOW_H
