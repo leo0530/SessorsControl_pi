@@ -19,15 +19,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
  //   InitRos();//初始化节点
 
-    rosTimer = new  QTimer(this);
-    rosTimer->start(100);
-    connect( rosTimer, SIGNAL(timeout()),this, SLOT(RunRosSpin()) );
+//    rosTimer = new  QTimer(this);
+//    rosTimer->start(100);
+//    connect( rosTimer, SIGNAL(timeout()),this, SLOT(RunRosSpin()) );
 
 //    fd = spi.Open(0,5000000,1);//打开spi设备
 
-    timerSpi = new QTimer(this);
-    connect(timerSpi, SIGNAL(timeout()), this, SLOT(updateSpi()));
-    timerSpi->start(1000);
+//    timerSpi = new QTimer(this);
+//    connect(timerSpi, SIGNAL(timeout()), this, SLOT(updateSpi()));
+//    timerSpi->start(1000);
 
     //初始化创建QUdpSocket对象
      mSocket = new QUdpSocket();
@@ -274,9 +274,14 @@ void MainWindow::on_pushButton_clicked()
 {
     QFile file;
     QDateTime time =QDateTime::currentDateTime();
-    QString strDate = time.toString("yyyy-MM-dd hh-mm-ss.csv");
+    QString strDate = time.toString("yyyy-MM-dd hh-mm-ss");
 
-    file.setFileName(strDate);
+    QString strPath;// = "/home/corvin/Desktop/raspberry_files/" + strDate + ".csv";
+    strPath.append("/home/corvin/Desktop/raspberry_files/");
+    strPath.append(strDate);
+    strPath.append(".csv");
+
+    file.setFileName(strPath);
 
     if(!file.open(QIODevice::WriteOnly|QIODevice::Text|QIODevice::Append))
     {
@@ -287,7 +292,8 @@ void MainWindow::on_pushButton_clicked()
     QTextStream textStream;
     textStream.setDevice(&file);
 
-    textStream<<strDate;
+    textStream<<strDate<<","<<"1"<<","<<"2"<<endl;//用","隔开，内容写如相邻的三个单元格
+    textStream.flush();
 
     file.close();
 
