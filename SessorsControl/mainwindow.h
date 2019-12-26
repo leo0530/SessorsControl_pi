@@ -11,11 +11,7 @@
 #include <QFile>
 #include "optimumcontrol.h"
 #include "spi_control.h"
-#include "ros/ros.h"
-#include "std_msgs/String.h"
-#include "geometry_msgs/Twist.h"
-using std::string;
-
+#include "roscontrol.h"
 
 namespace Ui {
 class MainWindow;
@@ -34,6 +30,7 @@ private slots:
     void updateSpi();
 
     void on_pushButton_clicked();
+    void StartReadSessor(const std_msgs::String::ConstPtr& msg);
 
 private:
     Ui::MainWindow *ui;

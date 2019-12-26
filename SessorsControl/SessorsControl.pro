@@ -33,12 +33,14 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     spi_control.cpp \
-    optimumcontrol.cpp
+    optimumcontrol.cpp \
+    roscontrol.cpp
 
 HEADERS += \
         mainwindow.h \
     spi_control.h \
-    optimumcontrol.h
+    optimumcontrol.h \
+    roscontrol.h
 
 FORMS += \
         mainwindow.ui
